@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 
@@ -97,7 +98,7 @@ func (o *CertOptions) Validate() error {
 func (o *CertOptions) Run() error {
 	_, err := o.getCertificateSigningRequest()
 	if err == nil {
-		err := o.deleteCertificatesV1CertificateSigningRequest(err)
+		err := o.deleteCertificatesV1CertificateSigningRequest()
 		if err != nil {
 			return err
 		}
@@ -121,11 +122,23 @@ func (o *CertOptions) Run() error {
 		},
 	}
 
-	csr, err = o.clientSet.CertificatesV1().
+	_, err = o.clientSet.CertificatesV1().
 		CertificateSigningRequests().
 		UpdateApproval(context.TODO(), o.csrName, csr, metav1.UpdateOptions{})
 	if err != nil {
 		return err
+	}
+
+	klog.V(2).Infof("wait csr:\"%s\" to be approved.", o.csrName)
+	for {
+		csr, err = o.getCertificateSigningRequest()
+		if err != nil {
+			return err
+		}
+		if csr.Status.Certificate != nil {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
 	}
 
 	startingConfig, err := o.configAccess.GetStartingConfig()
@@ -169,7 +182,7 @@ func (o *CertOptions) Run() error {
 	}
 
 	klog.V(2).Infof("delete csr `%s`.", o.csrName)
-	err = o.deleteCertificatesV1CertificateSigningRequest(err)
+	err = o.deleteCertificatesV1CertificateSigningRequest()
 	if err != nil {
 		return err
 	}
@@ -177,9 +190,9 @@ func (o *CertOptions) Run() error {
 	return nil
 }
 
-func (o *CertOptions) deleteCertificatesV1CertificateSigningRequest(err error) error {
+func (o *CertOptions) deleteCertificatesV1CertificateSigningRequest() error {
 	gracePeriodSeconds := int64(0)
-	err = o.clientSet.CertificatesV1().
+	err := o.clientSet.CertificatesV1().
 		CertificateSigningRequests().
 		Delete(context.TODO(), o.csrName, metav1.DeleteOptions{
 			GracePeriodSeconds: &gracePeriodSeconds,
