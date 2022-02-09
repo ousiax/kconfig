@@ -12,12 +12,11 @@ import (
 	certificatesv1 "k8s.io/api/certificates/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 	clientset "k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	"k8s.io/client-go/util/homedir"
-	"k8s.io/klog/v2"
 
 	cmduitl "github.com/qqbuby/konfig/cmd/util"
 	cmduitlpkix "github.com/qqbuby/konfig/cmd/util/pkix"
@@ -74,14 +73,13 @@ func NewCmdCert() *cobra.Command {
 
 func (o *CertOptions) Complete(cmd *cobra.Command, args []string) error {
 	o.csrName = o.userName + ":" + strings.Join(o.groups, ":")
-	config, err := clientcmd.BuildConfigFromFlags("", o.kubeconfig)
+
+	configFlags := &genericclioptions.ConfigFlags{
+		KubeConfig: &o.kubeconfig,
+	}
+	config, err := configFlags.ToRESTConfig()
 	if err != nil {
-		klog.V(2).Infof("build config from flags: %s", err)
-		klog.V(2).Info("try to build config in cluster.")
-		config, err = rest.InClusterConfig()
-		if err != nil {
-			return err
-		}
+		return err
 	}
 	o.clientSet, err = clientset.NewForConfig(config)
 	if err != nil {
@@ -189,13 +187,6 @@ func (o *CertOptions) createCertificatesV1CertificateSigningRequest(request []by
 				},
 			},
 			Spec: certificatesv1.CertificateSigningRequestSpec{
-				// username: developer
-				// groups: ["developers"]
-				// request: $(base64 <(cat developer-csr.pem) | tr -d '\n')
-				// usages: ["digital signature", "key encipherment", "client auth"]
-				// #expirationSeconds: 7200
-				// signerName: kubernetes.io/kube-apiserver-client
-				// ExpirationSeconds: expirationSeconds,
 				Username: o.userName,
 				Groups:   o.groups,
 				Usages: []certificatesv1.KeyUsage{
