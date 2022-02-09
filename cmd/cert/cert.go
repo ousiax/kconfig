@@ -58,11 +58,12 @@ func NewCmdCert() *cobra.Command {
 		},
 	}
 
+	kubeconfig := ""
 	if home := homedir.HomeDir(); home != "" {
-		cmd.Flags().StringVar(&o.kubeconfig, flagKubeconfig, filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
-	} else {
-		cmd.Flags().StringVar(&o.kubeconfig, flagKubeconfig, "", "absolute path to the kubeconfig file")
+		kubeconfig = filepath.Join(home, ".kube", "config")
 	}
+	cmd.Flags().StringVar(&o.kubeconfig, flagKubeconfig, "", fmt.Sprintf("(optional) absolute path to the kubeconfig file (default %s)", kubeconfig))
+
 	cmd.Flags().StringVarP(&o.userName, flagUserName, "u", "", "user name")
 	cmd.MarkFlagRequired(flagUserName)
 	cmd.Flags().StringArrayVarP(&o.groups, flagGroups, "g", nil, "group name")
