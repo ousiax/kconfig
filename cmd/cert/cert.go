@@ -17,6 +17,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	"k8s.io/client-go/util/homedir"
+	"k8s.io/klog/v2"
 
 	cmduitl "github.com/qqbuby/konfig/cmd/util"
 	cmduitlpkix "github.com/qqbuby/konfig/cmd/util/pkix"
@@ -95,13 +96,7 @@ func (o *CertOptions) Validate() error {
 func (o *CertOptions) Run() error {
 	_, err := o.getCertificateSigningRequest()
 	if err == nil {
-		gracePeriodSeconds := int64(0)
-		err = o.clientSet.CertificatesV1().
-			CertificateSigningRequests().
-			Delete(context.TODO(), o.csrName, metav1.DeleteOptions{
-				GracePeriodSeconds: &gracePeriodSeconds,
-			})
-
+		err := o.deleteCertificatesV1CertificateSigningRequest(err)
 		if err != nil {
 			return err
 		}
@@ -172,7 +167,24 @@ func (o *CertOptions) Run() error {
 		fmt.Fprint(os.Stdout, string(content))
 	}
 
+	klog.V(2).Infof("delete csr `%s`.", o.csrName)
+	err = o.deleteCertificatesV1CertificateSigningRequest(err)
+	if err != nil {
+		return err
+	}
+
 	return nil
+}
+
+func (o *CertOptions) deleteCertificatesV1CertificateSigningRequest(err error) error {
+	gracePeriodSeconds := int64(0)
+	err = o.clientSet.CertificatesV1().
+		CertificateSigningRequests().
+		Delete(context.TODO(), o.csrName, metav1.DeleteOptions{
+			GracePeriodSeconds: &gracePeriodSeconds,
+		})
+
+	return err
 }
 
 func (o *CertOptions) createCertificatesV1CertificateSigningRequest(request []byte) (*certificatesv1.CertificateSigningRequest, error) {

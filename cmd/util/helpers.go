@@ -1,9 +1,6 @@
 package util
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/spf13/cobra"
 
 	"k8s.io/klog/v2"
@@ -19,7 +16,6 @@ func GetFlagString(cmd *cobra.Command, flag string) string {
 
 func CheckErr(err error) {
 	if err != nil {
-		fmt.Fprint(os.Stderr, err)
-		os.Exit(1)
+		klog.Fatal(err)
 	}
 }
