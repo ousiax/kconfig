@@ -17,7 +17,7 @@ func NewCmdKonfig() *cobra.Command {
 		},
 	}
 
-	flags := cmds.Flags()
+	flags := cmds.PersistentFlags()
 	logFlags := &flag.FlagSet{}
 	klog.InitFlags(logFlags)
 	flags.AddGoFlagSet(logFlags)
