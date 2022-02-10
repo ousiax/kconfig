@@ -1,5 +1,5 @@
 #!/bin/sh
-set -ex
+set -e
 
 gitVersion=$(git describe)
 gitCommit=$(git rev-parse HEAD)
