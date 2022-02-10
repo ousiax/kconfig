@@ -12,6 +12,7 @@ import (
 	"k8s.io/klog/v2"
 
 	"github.com/qqbuby/kconfig/cmd/cert"
+	"github.com/qqbuby/kconfig/cmd/version"
 )
 
 func NewCmdKonfig() *cobra.Command {
@@ -27,16 +28,18 @@ func NewCmdKonfig() *cobra.Command {
 	klog.InitFlags(logFlags)
 	flags.AddGoFlagSet(logFlags)
 
-	var kubeconfig *string
+	var kubeconfig string
 	defaultKubeConfig := ""
 	if home := homedir.HomeDir(); home != "" {
 		defaultKubeConfig = filepath.Join(home, ".kube", "config")
 	}
-	flags.StringVar(kubeconfig, "kubeconfig", "", fmt.Sprintf("(optional) absolute path to the kubeconfig file (default %s)", defaultKubeConfig))
+	flags.StringVar(&kubeconfig, "kubeconfig", "", fmt.Sprintf("(optional) absolute path to the kubeconfig file (default %s)", defaultKubeConfig))
 	configFlags := &genericclioptions.ConfigFlags{
-		KubeConfig: kubeconfig,
+		KubeConfig: &kubeconfig,
 	}
 
 	cmds.AddCommand(cert.NewCmdCert(configFlags))
+	cmds.AddCommand(version.NewCmdVersion(configFlags))
+
 	return cmds
 }
