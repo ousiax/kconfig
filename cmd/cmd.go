@@ -2,8 +2,13 @@ package cmd
 
 import (
 	"flag"
+	"fmt"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
+
+	"k8s.io/cli-runtime/pkg/genericclioptions"
+	"k8s.io/client-go/util/homedir"
 	"k8s.io/klog/v2"
 
 	"github.com/qqbuby/kconfig/cmd/cert"
@@ -22,6 +27,16 @@ func NewCmdKonfig() *cobra.Command {
 	klog.InitFlags(logFlags)
 	flags.AddGoFlagSet(logFlags)
 
-	cmds.AddCommand(cert.NewCmdCert())
+	var kubeconfig *string
+	defaultKubeConfig := ""
+	if home := homedir.HomeDir(); home != "" {
+		defaultKubeConfig = filepath.Join(home, ".kube", "config")
+	}
+	flags.StringVar(kubeconfig, "kubeconfig", "", fmt.Sprintf("(optional) absolute path to the kubeconfig file (default %s)", defaultKubeConfig))
+	configFlags := &genericclioptions.ConfigFlags{
+		KubeConfig: kubeconfig,
+	}
+
+	cmds.AddCommand(cert.NewCmdCert(configFlags))
 	return cmds
 }

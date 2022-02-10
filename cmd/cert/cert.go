@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -17,7 +16,6 @@ import (
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
-	"k8s.io/client-go/util/homedir"
 	"k8s.io/klog/v2"
 
 	cmdutil "github.com/qqbuby/kconfig/cmd/util"
@@ -25,7 +23,6 @@ import (
 )
 
 const (
-	flagKubeconfig = "kubeconfig"
 	flagUserName   = "username"
 	flagGroups     = "group"
 	flagExpiration = "expiration"
@@ -35,7 +32,6 @@ const (
 )
 
 type CertOptions struct {
-	kubeconfig   string
 	clientSet    clientset.Interface
 	configAccess clientcmd.ConfigAccess
 	csrName      string
@@ -44,7 +40,7 @@ type CertOptions struct {
 	output       string
 }
 
-func NewCmdCert() *cobra.Command {
+func NewCmdCert(configFlags *genericclioptions.ConfigFlags) *cobra.Command {
 	o := CertOptions{
 		configAccess: clientcmd.NewDefaultPathOptions(),
 	}
@@ -53,17 +49,11 @@ func NewCmdCert() *cobra.Command {
 		Use:   "cert",
 		Short: "Create kubeconfig file with a specified certificate resources.",
 		Run: func(cmd *cobra.Command, args []string) {
-			cmdutil.CheckErr(o.Complete(cmd, args))
+			cmdutil.CheckErr(o.Complete(configFlags))
 			cmdutil.CheckErr(o.Validate())
 			cmdutil.CheckErr(o.Run())
 		},
 	}
-
-	kubeconfig := ""
-	if home := homedir.HomeDir(); home != "" {
-		kubeconfig = filepath.Join(home, ".kube", "config")
-	}
-	cmd.Flags().StringVar(&o.kubeconfig, flagKubeconfig, "", fmt.Sprintf("(optional) absolute path to the kubeconfig file (default %s)", kubeconfig))
 
 	cmd.Flags().StringVarP(&o.userName, flagUserName, "u", "", "user name")
 	cmd.MarkFlagRequired(flagUserName)
@@ -74,12 +64,9 @@ func NewCmdCert() *cobra.Command {
 	return cmd
 }
 
-func (o *CertOptions) Complete(cmd *cobra.Command, args []string) error {
+func (o *CertOptions) Complete(configFlags *genericclioptions.ConfigFlags) error {
 	o.csrName = o.userName + ":" + strings.Join(o.groups, ":")
 
-	configFlags := &genericclioptions.ConfigFlags{
-		KubeConfig: &o.kubeconfig,
-	}
 	config, err := configFlags.ToRESTConfig()
 	if err != nil {
 		return err
