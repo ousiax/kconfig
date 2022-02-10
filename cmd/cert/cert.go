@@ -20,8 +20,8 @@ import (
 	"k8s.io/client-go/util/homedir"
 	"k8s.io/klog/v2"
 
-	cmduitl "github.com/qqbuby/kconfig/cmd/util"
-	cmduitlpkix "github.com/qqbuby/kconfig/cmd/util/pkix"
+	cmdutil "github.com/qqbuby/kconfig/cmd/util"
+	cmdutilpkix "github.com/qqbuby/kconfig/cmd/util/pkix"
 )
 
 const (
@@ -53,9 +53,9 @@ func NewCmdCert() *cobra.Command {
 		Use:   "cert",
 		Short: "Create kubeconfig file with a specified certificate resources.",
 		Run: func(cmd *cobra.Command, args []string) {
-			cmduitl.CheckErr(o.Complete(cmd, args))
-			cmduitl.CheckErr(o.Validate())
-			cmduitl.CheckErr(o.Run())
+			cmdutil.CheckErr(o.Complete(cmd, args))
+			cmdutil.CheckErr(o.Validate())
+			cmdutil.CheckErr(o.Run())
 		},
 	}
 
@@ -235,17 +235,17 @@ func (o *CertOptions) getCertificateSigningRequest() (*certificatesv1.Certificat
 }
 
 func (o *CertOptions) createCertificateRequest() (keyPem []byte, csrPem []byte, err error) {
-	key, csr, err := cmduitlpkix.CreateDefaultCertificateRequest(o.userName, o.groups, nil)
+	key, csr, err := cmdutilpkix.CreateDefaultCertificateRequest(o.userName, o.groups, nil)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	keyPem, err = cmduitlpkix.PemPkcs8PKey(key)
+	keyPem, err = cmdutilpkix.PemPkcs8PKey(key)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	csrPem, err = cmduitlpkix.PemCertificateRequest(csr)
+	csrPem, err = cmdutilpkix.PemCertificateRequest(csr)
 	if err != nil {
 		return nil, nil, err
 	}
