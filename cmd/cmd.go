@@ -6,12 +6,12 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/klog/v2"
 
-	"github.com/qqbuby/konfig/cmd/cert"
+	"github.com/qqbuby/kconfig/cmd/cert"
 )
 
 func NewCmdKonfig() *cobra.Command {
 	var cmds = &cobra.Command{
-		Use: "konfig",
+		Use: "kconfig",
 		Run: func(cmd *cobra.Command, args []string) {
 			cmd.Help()
 		},

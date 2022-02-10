@@ -1,4 +1,4 @@
-module github.com/qqbuby/konfig
+module github.com/qqbuby/kconfig
 
 go 1.17
 

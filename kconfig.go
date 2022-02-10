@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/qqbuby/konfig/cmd"
+	"github.com/qqbuby/kconfig/cmd"
 )
 
 func main() {

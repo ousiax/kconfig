@@ -20,8 +20,8 @@ import (
 	"k8s.io/client-go/util/homedir"
 	"k8s.io/klog/v2"
 
-	cmduitl "github.com/qqbuby/konfig/cmd/util"
-	cmduitlpkix "github.com/qqbuby/konfig/cmd/util/pkix"
+	cmduitl "github.com/qqbuby/kconfig/cmd/util"
+	cmduitlpkix "github.com/qqbuby/kconfig/cmd/util/pkix"
 )
 
 const (
@@ -117,7 +117,7 @@ func (o *CertOptions) Run() error {
 		{
 			Type:    certificatesv1.CertificateApproved,
 			Status:  corev1.ConditionTrue,
-			Message: "This CSR was approved by konfig cert approve.",
+			Message: "This CSR was approved by kconfig cert approve.",
 			Reason:  "KonfigCertApprove",
 		},
 	}
@@ -209,7 +209,7 @@ func (o *CertOptions) createCertificatesV1CertificateSigningRequest(request []by
 			ObjectMeta: metav1.ObjectMeta{
 				Name: o.csrName,
 				Annotations: map[string]string{
-					"creator": "konfig.local.io",
+					"creator": "kconfig.local.io",
 				},
 			},
 			Spec: certificatesv1.CertificateSigningRequestSpec{
